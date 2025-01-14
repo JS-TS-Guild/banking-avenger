@@ -47,23 +47,35 @@ export default class Bank {
     const toUser = GlobalRegistry.getUser(toUserId);
     const toBank = toBankId ? GlobalRegistry.getBank(toBankId) : this;
 
-    const fromAccount = this.findAccountWithSufficientFunds(fromUser, amount);
-    if (!fromAccount) {
+    const fromAccounts = this.findAccountsWithSufficientFunds(fromUser, amount);
+    if (fromAccounts.length === 0) {
       throw new Error("Insufficient funds across all accounts");
     }
 
     const toAccount = toBank.getAccount(toUser.getAccountIds()[0]);
 
-    fromAccount.withdraw(amount);
+    let remainingAmount = amount;
+    for (const account of fromAccounts) {
+      const withdrawalAmount = Math.min(account.getBalance(), remainingAmount);
+      account.withdraw(withdrawalAmount);
+      remainingAmount -= withdrawalAmount;
+
+      if (remainingAmount === 0) break;
+    }
+
+    if (remainingAmount > 0 && this.isNegativeAllowed) {
+      fromAccounts[fromAccounts.length - 1].withdraw(remainingAmount);
+    }
+
     toAccount.deposit(amount);
   }
 
-  private findAccountWithSufficientFunds(
+  private findAccountsWithSufficientFunds(
     user: User,
     amount: number,
-  ): BankAccount | null {
-    let totalBalance = 0;
+  ): BankAccount[] {
     const userAccounts: BankAccount[] = [];
+    let totalBalance = 0;
 
     for (const accountId of user.getAccountIds()) {
       const account = this.accounts.get(accountId);
@@ -74,22 +86,10 @@ export default class Bank {
     }
 
     if (totalBalance >= amount || this.isNegativeAllowed) {
-      let remainingAmount = amount;
-      for (const account of userAccounts) {
-        const availableBalance = account.getBalance();
-        if (availableBalance >= remainingAmount) {
-          return account;
-        } else {
-          remainingAmount -= availableBalance;
-        }
-      }
-
-      if (this.isNegativeAllowed) {
-        return userAccounts[userAccounts.length - 1];
-      }
+      return userAccounts;
     }
 
-    return null;
+    return [];
   }
 
   isNegativeBalanceAllowed(): boolean {
