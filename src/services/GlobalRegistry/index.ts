@@ -1,11 +1,11 @@
 import { UserId, BankId } from "@/types/Common";
 import User from "@/models/user";
 import Bank from "@/models/bank";
+import { v4 as uuidv4 } from 'uuid';
 
 export default class GlobalRegistry {
   private static users: Map<UserId, User> = new Map();
   private static banks: Map<BankId, Bank> = new Map();
-  private static idCounter: number = 0;
 
   static registerUser(user: User): void {
     this.users.set(user.getId(), user);
@@ -32,12 +32,11 @@ export default class GlobalRegistry {
   }
 
   static generateId(): string {
-    return (++this.idCounter).toString();
+    return uuidv4();
   }
 
   static clear(): void {
     this.users.clear();
     this.banks.clear();
-    this.idCounter = 0;
   }
 }
