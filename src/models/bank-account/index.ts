@@ -39,8 +39,4 @@ export default class BankAccount {
 
     this.balance -= amount;
   }
-
-  canWithdraw(amount: number): boolean {
-    return this.balance >= amount || this.bank.isNegativeBalanceAllowed();
-  }
 }
