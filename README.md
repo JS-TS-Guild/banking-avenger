@@ -32,3 +32,6 @@ We are going to code up a banking management system using TypeScript and basic O
 4. Use proper commit messages and push your changes to the repo in the default branch.
 5. Check the status of your GitHub actions.
 6. Let Ankush know when you are done in the JS TS Discord server.
+
+
+![screenshot](src_diagram.png)
