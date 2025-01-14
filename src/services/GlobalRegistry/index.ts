@@ -1,6 +1,6 @@
-import { UserId, BankId } from '@/types/Common';
-import User from '@/models/user';
-import Bank from '@/models/bank';
+import { UserId, BankId } from "@/types/Common";
+import User from "@/models/user";
+import Bank from "@/models/bank";
 
 export default class GlobalRegistry {
   private static users: Map<UserId, User> = new Map();
@@ -41,4 +41,3 @@ export default class GlobalRegistry {
     this.idCounter = 0;
   }
 }
-

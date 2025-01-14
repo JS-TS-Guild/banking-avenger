@@ -5,4 +5,3 @@ export type BankAccountId = string;
 export interface BankOptions {
   isNegativeAllowed?: boolean;
 }
-

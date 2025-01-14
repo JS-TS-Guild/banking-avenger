@@ -1,5 +1,5 @@
-import { UserId, BankAccountId } from '@/types/Common';
-import GlobalRegistry from '@/services/GlobalRegistry';
+import { UserId, BankAccountId } from "@/types/Common";
+import GlobalRegistry from "@/services/GlobalRegistry";
 
 export default class User {
   private id: UserId;
@@ -34,4 +34,3 @@ export default class User {
     this.accountIds.push(accountId);
   }
 }
-
