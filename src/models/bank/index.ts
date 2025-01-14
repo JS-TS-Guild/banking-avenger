@@ -47,8 +47,10 @@ export default class Bank {
     const toUser = GlobalRegistry.getUser(toUserId);
     const toBank = toBankId ? GlobalRegistry.getBank(toBankId) : this;
 
-    const fromAccounts = this.findAccountsWithSufficientFunds(fromUser, amount);
-    if (fromAccounts.length === 0) {
+    const fromAccounts = this.getUserAccounts(fromUser);
+    const totalBalance = this.calculateTotalBalance(fromAccounts);
+
+    if (totalBalance < amount && !this.isNegativeAllowed) {
       throw new Error("Insufficient funds across all accounts");
     }
 
@@ -56,9 +58,13 @@ export default class Bank {
 
     let remainingAmount = amount;
     for (const account of fromAccounts) {
-      const withdrawalAmount = Math.min(account.getBalance(), remainingAmount);
-      account.withdraw(withdrawalAmount);
-      remainingAmount -= withdrawalAmount;
+      const availableBalance = account.getBalance();
+      const withdrawalAmount = Math.min(availableBalance, remainingAmount);
+
+      if (withdrawalAmount > 0) {
+        account.withdraw(withdrawalAmount);
+        remainingAmount -= withdrawalAmount;
+      }
 
       if (remainingAmount === 0) break;
     }
@@ -70,26 +76,15 @@ export default class Bank {
     toAccount.deposit(amount);
   }
 
-  private findAccountsWithSufficientFunds(
-    user: User,
-    amount: number,
-  ): BankAccount[] {
-    const userAccounts: BankAccount[] = [];
-    let totalBalance = 0;
+  private getUserAccounts(user: User): BankAccount[] {
+    return user
+      .getAccountIds()
+      .map((id) => this.accounts.get(id))
+      .filter((account): account is BankAccount => account !== undefined);
+  }
 
-    for (const accountId of user.getAccountIds()) {
-      const account = this.accounts.get(accountId);
-      if (account) {
-        userAccounts.push(account);
-        totalBalance += account.getBalance();
-      }
-    }
-
-    if (totalBalance >= amount || this.isNegativeAllowed) {
-      return userAccounts;
-    }
-
-    return [];
+  private calculateTotalBalance(accounts: BankAccount[]): number {
+    return accounts.reduce((total, account) => total + account.getBalance(), 0);
   }
 
   isNegativeBalanceAllowed(): boolean {
